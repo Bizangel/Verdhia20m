@@ -1,7 +1,14 @@
-﻿<krpano version="1.20.7" title="Virtual Tour">
+﻿<krpano version="1.20.7" title="Virtual Tour" showerrors="true" logkey="true">
 
-	<include url="skin/vtourskin.xml" />
-
+	<include url="skin/vtourskin.xml" if="0"/>
+	
+	<include url="vuho_overlay.xml"/>
+	<include url="helper360.xml"/>
+	
+	<include url="%VIEWER%/toolbox/toolbox.xml" if="0" />
+	<!-- <include url="%VIEWER%/plugins/tour_edithelper.xml" if="0" /> -->
+	
+	<events onclick="check_navigation();" if="1"/>
 	<!-- customize skin settings: maps, gyro, webvr, thumbnails, tooltips, layout, design, ... -->
 	<skin_settings maps="false"
 	               maps_type="google"
@@ -68,79 +75,166 @@
 	<!-- <include url="skin/vtourskin_design_117.xml"         /> -->
 	<!-- <include url="skin/vtourskin_design_117round.xml"    /> -->
 	<!-- <include url="skin/vtourskin_design_black.xml"       /> -->
-
-
+	
+	<!-- DEPENDENCIES -->
+	<action name="skin_loadscene" scope="local" args="newscenenameorindex, blendmode">
+		if(webvr.isenabled AND scene.count GT 1,
+			set(hotspot[skin_webvr_prev_scene].visible, false);
+			set(hotspot[skin_webvr_next_scene].visible, false);
+		);
+		
+		
+		calc(layer[skin_thumbborder].parent, 'skin_thumb_' + scene[get(newscenenameorindex)].index);
+		layer[skin_thumbs].scrolltocenter(get(scene[get(newscenenameorindex)].thumbx), get(scene[get(newscenenameorindex)].thumby));
+		tour_loadscene(get(scene[get(newscenenameorindex)].name));
+		
+		
+	</action>
+	
+	<!-- DEBUG PURPOSES -->
+	<action name="print">
+		showlog();
+		trace(" ",%1);
+	</action>
+	
+	<events onkeydown="debugaction();" if="1"/>
+	
+	<action name="debugaction" if="1" >
+		if(keycode == 89, <!-- Y KEY -->
+			print(get(layer[OverlayMenu].crop));
+		);
+		if(keycode == 85, <!-- U KEY -->
+			enablemap();
+		);
+		if(keycode == 72, <!-- H KEY -->
+			change_hab(3);
+		);
+		
+		if(keycode == 74, <!-- J KEY -->
+			change_hab(2);
+		);
+		
+		if(keycode == 75, <!-- K KEY -->
+			set_hab_ui(2,on);
+		);
+		if (keycode == 76, <!-- L KEY -->
+			set_hab_ui(2,off);
+		);
+		
+	</action>
+	
 	<!-- startup action - load the first scene -->
 	<action name="startup" autorun="onstart">
 		if(startscene === null OR !scene[get(startscene)], copy(startscene,scene[0].name); );
 		loadscene(get(startscene), null, MERGE);
+		
+		<!-- set radar heading -->
+		set(layer[radar].heading, 180);
+		<!-- initial view -->
+		set(view.tx,183);
+		set(view.ty,0);
+		set(view.tz,518);
+		
+		lookat(0,0);
+		
+		tween(view.tx|view.ty|view.tz, calc(image.ox + '|' + image.oy + '|' + image.oz), 2.0, default);	
+		
 		if(startactions !== null, startactions() );
 	</action>
-
-
 	
-	<scene name="scene_VERDHIACHIA_20M2_P1_FC" title="VERDHIACHIA_20M2_P1_FC" onstart="" havevrimage.mobilevr="false" havevrimage.no-mobilevr="true" thumburl="panos/VERDHIACHIA_20M2_P1_FC.tiles/thumb.jpg" lat="" lng="" heading="">
+	<display depthmaprendermode="depthmap" />
+	
+	<!-- Space location of each scene -->
+	<style name="scene_1"  ox="183"    oy="0"   oz="518"   linkedscene="scene_1" autohotspot="true" 
+	allowed="scene_2|scene_4"/>
+	
+	<style name="scene_2"  ox="172"    oy="0"   oz="279"   linkedscene="scene_2" autohotspot="true" 
+	allowed="scene_1|scene_3"/>
+	
+	<style name="scene_3"  ox="321"    oy="0"   oz="278"   linkedscene="scene_3" autohotspot="true" 
+	allowed="scene_2"/>
+	
+	<style name="scene_4"  ox="310"    oy="0"   oz="521"   linkedscene="scene_4" autohotspot="true" 
+	allowed="scene_1"/>
+	
+	<scene name="scene_1" title="VERDHIACHIA_20M2_P1_FC" onstart="" havevrimage.mobilevr="false" havevrimage.no-mobilevr="true" thumburl="panos/VERDHIACHIA_20M2_P1_FC.tiles/thumb.jpg" lat="" lng="" heading="">
 
-		<view hlookat="0.0" vlookat="0.0" fovtype="MFOV" fov="120" maxpixelzoom="2.0" fovmin="70" fovmax="140" limitview="auto" />
+		<view hlookat="183.076" vlookat="2.486" fovtype="MFOV" fov="120.000" maxpixelzoom="2.0" fovmin="70" fovmax="140" limitview="auto" />
 
 		<preview url="panos/VERDHIACHIA_20M2_P1_FC.tiles/preview.jpg" />
 
-		<image if="!(webvr.isenabled OR device.mobilevr)">
+		<image if="!(webvr.isenabled OR device.mobilevr)" style="scene_1">
 			<cube url="panos/VERDHIACHIA_20M2_P1_FC.tiles/%s/l%l/%v/l%l_%s_%v_%h.jpg" multires="512,640,1280" />
+			<depthmap url="depthmaps/VERDHIACHIA_20M2_P1_SD.png" enabled ="true" scale="0.7" offset="0"/>
 		</image>
 
-		<image stereo="true" stereolabels="1|2" if="webvr.isenabled OR device.mobilevr">
+		<image stereo="true" stereolabels="1|2" if="webvr.isenabled OR device.mobilevr" style="scene_1">
 			<cube url="panos/VERDHIACHIA_20M2_P1_FC.tiles/vr/pano_%t_%s.jpg" />
+			<depthmap url="depthmaps/VERDHIACHIA_20M2_P1_SD.png" enabled ="true" scale="0.7" offset="0"/>
 		</image>
-
+		
+		<hotspot name="spot1" style="visual_floorspot" tx="155" ty="206" tz="12" keep="false" visible="true" enabled="true" linkedscene="scene_4"/>
+		
+		<hotspot name="spot2" style="visual_floorspot" tx="5.5" ty="145.2" tz="-235" keep="false" visible="true" enabled="true" linkedscene="scene_2"/>
 	</scene>
 
-	<scene name="scene_VERDHIACHIA_20M2_P2_FC" title="VERDHIACHIA_20M2_P2_FC" onstart="" havevrimage.mobilevr="false" havevrimage.no-mobilevr="true" thumburl="panos/VERDHIACHIA_20M2_P2_FC.tiles/thumb.jpg" lat="" lng="" heading="">
+	<scene name="scene_2" title="VERDHIACHIA_20M2_P2_FC" onstart="" havevrimage.mobilevr="false" havevrimage.no-mobilevr="true" thumburl="panos/VERDHIACHIA_20M2_P2_FC.tiles/thumb.jpg" lat="" lng="" heading="">
 
 		<view hlookat="0.0" vlookat="0.0" fovtype="MFOV" fov="120" maxpixelzoom="2.0" fovmin="70" fovmax="140" limitview="auto" />
 
 		<preview url="panos/VERDHIACHIA_20M2_P2_FC.tiles/preview.jpg" />
 
-		<image if="!(webvr.isenabled OR device.mobilevr)">
+		<image if="!(webvr.isenabled OR device.mobilevr)" style="scene_2">
 			<cube url="panos/VERDHIACHIA_20M2_P2_FC.tiles/%s/l%l/%v/l%l_%s_%v_%h.jpg" multires="512,640,1280" />
+			<depthmap url="depthmaps/VERDHIACHIA_20M2_P2_SD.png" enabled ="true" scale="0.7" offset="0"/>
 		</image>
 
-		<image stereo="true" stereolabels="1|2" if="webvr.isenabled OR device.mobilevr">
+		<image stereo="true" stereolabels="1|2" if="webvr.isenabled OR device.mobilevr" style="scene_2">
 			<cube url="panos/VERDHIACHIA_20M2_P2_FC.tiles/vr/pano_%t_%s.jpg" />
+			<depthmap url="depthmaps/VERDHIACHIA_20M2_P2_SD.png" enabled ="true" scale="0.7" offset="0"/>
 		</image>
-
+		
+		<hotspot name="spot1" style="visual_floorspot" tx="7" ty="153.2" tz="238" keep="false" visible="true" enabled="true" linkedscene="scene_1"/>
+		
+		<hotspot name="spot2" style="visual_floorspot" tx="238" ty="153.2" tz="7" keep="false" visible="true" enabled="true" linkedscene="scene_3"/>
 	</scene>
 
-	<scene name="scene_VERDHIACHIA_20M2_P3_FC" title="VERDHIACHIA_20M2_P3_FC" onstart="" havevrimage.mobilevr="false" havevrimage.no-mobilevr="true" thumburl="panos/VERDHIACHIA_20M2_P3_FC.tiles/thumb.jpg" lat="" lng="" heading="">
+	<scene name="scene_3" title="VERDHIACHIA_20M2_P3_FC" onstart="" havevrimage.mobilevr="false" havevrimage.no-mobilevr="true" thumburl="panos/VERDHIACHIA_20M2_P3_FC.tiles/thumb.jpg" lat="" lng="" heading="">
 
 		<view hlookat="0.0" vlookat="0.0" fovtype="MFOV" fov="120" maxpixelzoom="2.0" fovmin="70" fovmax="140" limitview="auto" />
 
 		<preview url="panos/VERDHIACHIA_20M2_P3_FC.tiles/preview.jpg" />
 
-		<image if="!(webvr.isenabled OR device.mobilevr)">
+		<image if="!(webvr.isenabled OR device.mobilevr)" style="scene_3">
 			<cube url="panos/VERDHIACHIA_20M2_P3_FC.tiles/%s/l%l/%v/l%l_%s_%v_%h.jpg" multires="512,640,1280" />
+			<depthmap url="depthmaps/VERDHIACHIA_20M2_P3_SD.png" enabled ="true" scale="0.7" offset="0"/>
 		</image>
 
-		<image stereo="true" stereolabels="1|2" if="webvr.isenabled OR device.mobilevr">
+		<image stereo="true" stereolabels="1|2" if="webvr.isenabled OR device.mobilevr" style="scene_3">
 			<cube url="panos/VERDHIACHIA_20M2_P3_FC.tiles/vr/pano_%t_%s.jpg" />
+			<depthmap url="depthmaps/VERDHIACHIA_20M2_P3_SD.png" enabled ="true" scale="0.7" offset="0"/>
 		</image>
-
+		
+		<hotspot name="spot2" style="visual_floorspot" tx="-238" ty="153.2" tz="-7" keep="false" visible="true" enabled="true" linkedscene="scene_2"/>
 	</scene>
 
-	<scene name="scene_VERDHIACHIA_20M2_P4_FC" title="VERDHIACHIA_20M2_P4_FC" onstart="" havevrimage.mobilevr="false" havevrimage.no-mobilevr="true" thumburl="panos/VERDHIACHIA_20M2_P4_FC.tiles/thumb.jpg" lat="" lng="" heading="">
+	<scene name="scene_4" title="VERDHIACHIA_20M2_P4_FC" onstart="" havevrimage.mobilevr="false" havevrimage.no-mobilevr="true" thumburl="panos/VERDHIACHIA_20M2_P4_FC.tiles/thumb.jpg" lat="" lng="" heading="">
 
 		<view hlookat="0.0" vlookat="0.0" fovtype="MFOV" fov="120" maxpixelzoom="2.0" fovmin="70" fovmax="140" limitview="auto" />
 
 		<preview url="panos/VERDHIACHIA_20M2_P4_FC.tiles/preview.jpg" />
 
-		<image if="!(webvr.isenabled OR device.mobilevr)">
+		<image if="!(webvr.isenabled OR device.mobilevr)" style="scene_4">
 			<cube url="panos/VERDHIACHIA_20M2_P4_FC.tiles/%s/l%l/%v/l%l_%s_%v_%h.jpg" multires="512,640,1280" />
+			<depthmap url="depthmaps/VERDHIACHIA_20M2_P4_SD.png" enabled ="true" scale="0.7" offset="0"/>
 		</image>
 
-		<image stereo="true" stereolabels="1|2" if="webvr.isenabled OR device.mobilevr">
+		<image stereo="true" stereolabels="1|2" if="webvr.isenabled OR device.mobilevr" style="scene_4">
 			<cube url="panos/VERDHIACHIA_20M2_P4_FC.tiles/vr/pano_%t_%s.jpg" />
+			<depthmap url="depthmaps/VERDHIACHIA_20M2_P4_SD.png" enabled ="true" scale="0.7" offset="0"/>
 		</image>
-
+		
+		<hotspot name="spot1" style="visual_floorspot" tx="-168" ty="200" tz="-15" keep="false" visible="true" enabled="true" linkedscene="scene_1"/>
 	</scene>
 
 
