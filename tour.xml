@@ -135,8 +135,6 @@
 		set(view.ty,0);
 		set(view.tz,518);
 		
-		lookat(0,0);
-		
 		tween(view.tx|view.ty|view.tz, calc(image.ox + '|' + image.oy + '|' + image.oz), 2.0, default);	
 		
 		if(startactions !== null, startactions() );
