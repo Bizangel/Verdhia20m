@@ -545,12 +545,16 @@
 				set(layer[Map_Toggle].y,20%);
 				set(layer[FurnitureToggle].x,4%);
 				set(layer[FurnitureToggle].y,5%);
+				
+				set(layer[OverlayMenu].scale, 0.12);
 				,
 				<!-- LANDSCAPE -->
 				set(layer[map_toggle].x,50);
 				set(layer[map_toggle].y,50);
 				set(layer[FurnitureToggle].x,150);
 				set(layer[FurnitureToggle].y,50);
+				
+				set(layer[OverlayMenu].scale, 0.17);
 			);
 			
 			if(stagewidth LE 300,
@@ -569,8 +573,10 @@
 			calc(scale_fix,min(stagewidth/1010,stageheight/630 )*0.6);
 			roundval(scale_fix,2);
 			set(layer[infoslide1].scale,get(scale_fix));
+			set(layer[infoslide2].scale,get(scale_fix));
 			,
 			set(layer[infoslide1].scale,0.6);
+			set(layer[infoslide2].scale,0.6);
 		);
 	</action>
 	
